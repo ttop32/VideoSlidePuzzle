@@ -27,12 +27,14 @@
 
   
 # Required environment to run    
+```python
 npm i vue --save    
 npm install -g @ionic/cli@latest native-run cordova-res    
 ionic start myApp blank --type vue
 ionic integrations enable capacitor
 cd myApp
 vue add pwa
+```
 
 # Run serve
 ```python
