@@ -52,7 +52,9 @@ firebase deploy
 # Acknowledgement and References  
 - [Vue.js](https://vuejs.org/)
 - [ionic](https://ionicframework.com/)
-
+- [vue-8-puzzle](https://github.com/meganetaaan/vue-8-puzzle)
+- [Vue Slide Puzzle](https://codepen.io/oldcoyote/pen/OwJvxV)
+- [Slide Puzzle](https://codepen.io/mkeke/pen/ByzXeJ) 
 
 
 
