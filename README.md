@@ -35,9 +35,13 @@ npm install -g firebase-tools
 #ionic integrations enable capacitor
 #ionic build
 #ionic cap add android
+
 #vue add pwa
 #firebase login
 #firebase init
+#ionic build
+#firebase deploy
+
 npm i python-range --save
 npm i shuffle-array --save
 ```
@@ -49,8 +53,6 @@ ionic serve
 
 # Run build   
 ```python
-firebase login
-firebase init
 ionic build
 firebase deploy
 ```
