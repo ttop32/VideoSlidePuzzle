@@ -28,12 +28,18 @@
   
 # Required environment to run    
 ```python
-npm i vue --save    
 npm install -g @ionic/cli@latest native-run cordova-res    
-ionic start myApp blank --type vue
-ionic integrations enable capacitor
-cd myApp
-vue add pwa
+npm install -g firebase-tools
+#ionic start VideoSlidePuzzle blank --type vue
+#cd VideoSlidePuzzle
+#ionic integrations enable capacitor
+#ionic build
+#ionic cap add android
+#vue add pwa
+#firebase login
+#firebase init
+npm i python-range --save
+npm i shuffle-array --save
 ```
 
 # Run serve
