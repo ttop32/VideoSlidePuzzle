@@ -5,14 +5,11 @@
 - play on [web](https://slidepuzzle.web.app/)
 
 
-# Result   
-![result](doc/screenshot0.png)    
-![result](doc/screenshot2.png)     
-![result](doc/screenshot3.png)     
-<p float="left">
-  <img src="/doc/screenshot3.png" width="100" />
-  <img src="/doc/screenshot3.png" width="100" /> 
-  <img src="/doc/screenshot3.png" width="100" />
+# Result  
+<p float="middle">
+  <img src="/doc/screenshot0.png" width="32%" />
+  <img src="/doc/screenshot2.png" width="32%" /> 
+  <img src="/doc/screenshot3.png" width="32%" />
 </p>
 
 
