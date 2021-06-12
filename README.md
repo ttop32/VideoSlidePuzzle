@@ -9,6 +9,11 @@
 ![result](doc/screenshot0.png)    
 ![result](doc/screenshot2.png)     
 ![result](doc/screenshot3.png)     
+<p float="left">
+  <img src="/doc/screenshot3.png" width="100" />
+  <img src="/doc/screenshot3.png" width="100" /> 
+  <img src="/doc/screenshot3.png" width="100" />
+</p>
 
 
 # Features
