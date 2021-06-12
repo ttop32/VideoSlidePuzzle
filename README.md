@@ -62,8 +62,6 @@ firebase deploy
 - [ionic](https://ionicframework.com/)
 - [vue-8-puzzle](https://github.com/meganetaaan/vue-8-puzzle)
 - [Vue Slide Puzzle](https://codepen.io/oldcoyote/pen/OwJvxV)
-- [Slide Puzzle](https://codepen.io/mkeke/pen/ByzXeJ) 
-
-
-
-
+- [Bokeh](https://pixabay.com/videos/id-55859/) 
+- [Mountain](https://pixabay.com/videos/id-65953/) 
+- [Waves](https://pixabay.com/videos/id-61950/) 
