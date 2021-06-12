@@ -61,6 +61,8 @@ firebase deploy
 - [Vue.js](https://vuejs.org/)
 - [ionic](https://ionicframework.com/)
 - [vue-8-puzzle](https://github.com/meganetaaan/vue-8-puzzle)
+- [Vue Slide Puzzle](https://codepen.io/oldcoyote/pen/OwJvxV)
+- [Slide Puzzle](https://codepen.io/mkeke/pen/ByzXeJ) 
 - [python-range](https://github.com/michal-perlakowski/range)
 - [shuffle-array](https://github.com/pazguille/shuffle-array)
 - [Bokeh](https://pixabay.com/videos/id-55859/) 
