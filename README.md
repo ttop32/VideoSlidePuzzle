@@ -1,15 +1,14 @@
 # VideoSlidePuzzle
 - create your own sliding puzzle from any video or image for play its sliding puzzle
-- fail to implement on android. This is too heavy to load(too laggy). 
+- Currently, I fail to implement on android. This is too heavy to load(too laggy). 
 - vue ionic is used to implement for web and android
-- play on [firebase]()
+- play on [web](https://slidepuzzle.web.app/)
 
 
 # Result   
-![result](doc/screenshot_1.png)    
-![result](doc/screenshot_2.png)     
-![result](doc/screenshot_3.png)    
-![result](doc/screenshot_4.png)    
+![result](doc/screenshot0.png)    
+![result](doc/screenshot2.png)     
+![result](doc/screenshot3.png)     
 
 
 # Features
@@ -21,8 +20,7 @@
 - support simultaneous movement on same row tiles 
 
 # How to play
-- touch image tile to move sliding puzzle tile
-- sliding puzzle tile can be moved to fill empty space
+- touch image tile to move sliding puzzle tile to empty space
 - sliding puzzle game is solved when all splitted tile is in ordered position
 
   
