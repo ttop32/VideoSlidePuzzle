@@ -1,0 +1,7 @@
+{
+  "name": "VideoSlidePuzzle",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
