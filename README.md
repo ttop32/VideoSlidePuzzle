@@ -1,7 +1,7 @@
 # VideoSlidePuzzle
-- create your own sliding puzzle from any video or image for play its sliding puzzle
-- Currently, I fail to implement on android. This is too heavy to load(too laggy). 
-- vue ionic is used to implement for web and android
+- classic sliding puzzle is implemented for web and android using ionic vue
+- user can create own sliding puzzle from any user provided video or image
+- Currently, I fail to implement on android apk. This is too heavy to load(too laggy). 
 - play on [web](https://slidepuzzle.web.app/)
 
 
