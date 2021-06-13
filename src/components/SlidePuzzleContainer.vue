@@ -24,8 +24,9 @@
 
 
 <ion-content>
-  <img v-if="isImage" class="sourceImg" ref="sourceImg" :src="src" @load="onMediaLoad">
-  <video v-else class="sourceImg" ref="sourceImg" autoplay="autoplay" loop="loop" playsinline="" :src="src" width="500" height="500" @play="onMediaLoad">
+  <img v-if="isImage" class="sourceImg" ref="sourceImg" :src="src" @load="onMediaLoad" >
+  <video v-else class="sourceImg" ref="sourceImg" autoplay="autoplay" loop="loop" playsinline="" :src="src" width="500" height="500" @play="onMediaLoad" crossorigin="anonymous" preload :muted="muted">
+
   </video>
   <div id="layout">
     <transition-group name="slide" class="puzzleContainer" tag="span" :style="{'width': containerSize + 'px'}">
@@ -34,7 +35,7 @@
                   height: `${tileHeightPercent}%`,
                   opacity: tile.position === openPos ? 0 : 1
                   }">
-        <canvas :ref="el => { if (el) tileCanvasList[tile.index]=el }" class="tile_canvas" @click="move(tile.position)" :width="tileWidth" :height="tileHeight">
+        <canvas :ref="el => { if (el) tileCanvasList[tile.index]=el }" class="tile_canvas" @mouseup.prevent="move(tile.position)" @touchend.prevent="move(tile.position)" @click.prevent @mousedown.prevent :width="tileWidth" :height="tileHeight">
         </canvas>
       </div>
     </transition-group>
@@ -48,6 +49,7 @@
 </template>
 <script>
 import range from 'python-range';
+import shuffle from 'shuffle-array';
 import {
   refresh,
   expand,
@@ -55,18 +57,15 @@ import {
 } from 'ionicons/icons';
 import {
   IonButtons,
+  IonButton,
   IonContent,
   IonHeader,
   IonTitle,
   IonToolbar,
   IonDatetime,
+  IonIcon,
 } from '@ionic/vue';
 
-
-//tile video size
-
-
-import shuffle from 'shuffle-array';
 
 export default {
   name: 'SlidePuzzleContainer',
@@ -75,11 +74,13 @@ export default {
   },
   components: {
     IonButtons,
+    IonButton,
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
     IonDatetime,
+    IonIcon,
   },
   setup() {
     return {
@@ -103,12 +104,13 @@ export default {
       imageMinSize: 0,
       imageStartX: 0,
       imageStartY: 0,
+      muted:true, //video is muted because chrome video autoplay policy does not allow autoplay unless muted
 
       //tile canvas----------
       tileCanvasList: {},
       image: null,
       blob: null,
-      src: "../assets/img/Bokeh - 55859.mp4",
+      src: "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Bokeh%20-%2055859.mp4",
       lastRender: -1,
       canvasRAFID: null,
       bufferCanvas: null,
@@ -116,14 +118,12 @@ export default {
       backgroundCanvas:null,
       backgroundCtx:null,
 
+
       //timer--------
       timerTime: "00:00:00",
       timerRAFID: null,
       startTime: 0,
       runTime: 0,
-
-
-
     }
   },
   computed: {
@@ -178,15 +178,20 @@ export default {
     this.terminateVideo();
   },
 
-
   methods: {
     getRandomImg() {
+      // const fileList = [
+      //   "Bokeh - 55859.mp4",
+      //   "Mountain - 65953.mp4",
+      //   "Waves - 61950.mp4",
+      // ];
+      // this.src = "../assets/img/" + shuffle.pick(fileList); //get random item
       const fileList = [
-        "Bokeh - 55859.mp4",
-        "Mountain - 65953.mp4",
-        "Waves - 61950.mp4",
+        "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Bokeh%20-%2055859.mp4",
+        "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Mountain%20-%2065953.mp4",
+        "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Waves%20-%2061950.mp4",
       ];
-      this.src = "../assets/img/" + shuffle.pick(fileList); //get random item
+      this.src = shuffle.pick(fileList); //get random item
     },
     //puzzle init===========================================================================
     setTile() {
@@ -229,7 +234,9 @@ export default {
     },
     onImgLoad() {
       this.initCanvas(this.image.naturalWidth, this.image.naturalHeight);
-      this.imageToCanvas();
+      this.$nextTick(() => {
+        this.imageToCanvas();
+      });
     },
     imageToCanvas() {
       //imageToBuffer
@@ -266,7 +273,7 @@ export default {
       this.contextList= [];
       this.getBackgroundPositionList=[];
       Object.entries(this.tileCanvasList).forEach(([index, canvas]) => {
-        const con =canvas.getContext("2d", { alpha: false })
+        const con =canvas.getContext("2d", { alpha: false });
         con.imageSmoothingEnabled= false;
         this.contextList.push(con);
 
@@ -369,6 +376,7 @@ export default {
       this.containerSize = minSize;
     },
     loadFile(event) {
+      this.muted=false;
       this.setTile();
       if (this.blob) {
         URL.revokeObjectURL(this.blob);
@@ -469,7 +477,8 @@ export default {
 
 /* background ================== */
 .sourceImg {
-  display: none;
+  position: absolute;
+  visibility: hidden;
 }
 
 .background {

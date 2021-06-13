@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.3d7d428c1b794bd178690c6c34206841.js"
+  "/precache-manifest.c743834d11edb7d82250bf8bec6d1788.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "VideoSlidePuzzle"});
