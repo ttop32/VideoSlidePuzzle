@@ -1,60 +1,77 @@
 <template>
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="primary">
-      <ion-button @click="randomSlide(500)">
-        <ion-icon slot="icon-only" :icon="refresh"></ion-icon>
-      </ion-button>
+  <div id="container">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="primary">
+          <ion-button @click="randomSlide(500)">
+            <ion-icon slot="icon-only" :icon="refresh"></ion-icon>
+          </ion-button>
 
-      <ion-button @click="$refs.sizeOptionList.$el.open()">
-        <ion-icon slot="icon-only" :icon="expand"></ion-icon>
-        <ion-datetime ref="sizeOptionList" @ionChange="changeSizeUsingDate" display-format="YY" :value="1900+puzzleSize" min="1903" max="1910" style="display: none;"> </ion-datetime>
-      </ion-button>
+          <ion-button @click="changeSize">
+            <ion-icon slot="icon-only" :icon="expand"></ion-icon>
+          </ion-button>
 
-      <ion-button @click="$refs.inputfile.click()">
-        <ion-icon slot="icon-only" :icon="folderOpenOutline"></ion-icon>
-        <input ref="inputfile" type="file" accept="video/*,image/*" name="image" id="file" @change="loadFile" />
-      </ion-button>
-    </ion-buttons>
+          <ion-button @click="$refs.inputfile.click()">
+            <ion-icon slot="icon-only" :icon="folderOpenOutline"></ion-icon>
+            <input
+              ref="inputfile"
+              type="file"
+              accept="video/*,image/*"
+              name="image"
+              id="file"
+              @change="loadFile"
+            />
+          </ion-button>
+        </ion-buttons>
 
-    <ion-title mode=ios>{{timerTime}}</ion-title>
-  </ion-toolbar>
-</ion-header>
+        <ion-title mode="ios">
+          <StopwatchContainer ref="stopwatchRef"></StopwatchContainer>
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
 
+    <ion-content>
+      <img
+        v-if="isImage"
+        class="sourceImg"
+        ref="sourceImg"
+        :src="src"
+        @load="onMediaLoad"
+      />
+      <video
+        v-else
+        class="sourceImg"
+        ref="sourceImg"
+        autoplay="autoplay"
+        loop="loop"
+        playsinline=""
+        :src="src"
+        @play="onMediaLoad"
+        crossorigin="anonymous"
+        preload
+        :muted="muted"
+      ></video>
 
-
-<ion-content>
-  <img v-if="isImage" class="sourceImg" ref="sourceImg" :src="src" @load="onMediaLoad" >
-  <video v-else class="sourceImg" ref="sourceImg" autoplay="autoplay" loop="loop" playsinline="" :src="src" width="500" height="500" @play="onMediaLoad" crossorigin="anonymous" preload :muted="muted">
-
-  </video>
-  <div id="layout">
-    <transition-group name="slide" class="puzzleContainer" tag="span" :style="{'width': containerSize + 'px'}">
-      <div v-for="tile in tiles" class="tile" :key="tile.index" :style="{
-                  width: `${tileWidthPercent}%`,
-                  height: `${tileHeightPercent}%`,
-                  opacity: tile.position === openPos ? 0 : 1
-                  }">
-        <canvas :ref="el => { if (el) tileCanvasList[tile.index]=el }" class="tile_canvas" @mouseup.prevent="move(tile.position)" @touchend.prevent="move(tile.position)" @click.prevent @mousedown.prevent :width="tileWidth" :height="tileHeight">
-        </canvas>
+      <div class="boardContainer">
+        <canvas
+          ref="boardCanvas"
+          class="tile_canvas"
+          @click="handleTileClick"
+          :width="canvasWidth"
+          :height="canvasWidth"
+          :style="{
+            width: boardSize + 'px',
+            margin: '-' + tilePadding + 'px',
+            border: tilePadding + 'px solid white',
+          }"
+        ></canvas>
       </div>
-    </transition-group>
-
-
-    <canvas class="background" ref="background"> </canvas>
-
-
+      <canvas class="background" ref="background"> </canvas>
+    </ion-content>
   </div>
-</ion-content>
 </template>
 <script>
-import range from 'python-range';
-import shuffle from 'shuffle-array';
-import {
-  refresh,
-  expand,
-  folderOpenOutline
-} from 'ionicons/icons';
+import { refresh, expand, folderOpenOutline } from "ionicons/icons";
 import {
   IonButtons,
   IonButton,
@@ -62,13 +79,18 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
-  IonDatetime,
   IonIcon,
-} from '@ionic/vue';
+  pickerController,
+} from "@ionic/vue";
+import range from "python-range";
+import shuffle from "shuffle-array";
+import TWEEN from "@tweenjs/tween.js";
+import * as deepcopy from "deepcopy";
 
+import StopwatchContainer from "@/components/StopwatchComponent.vue";
 
 export default {
-  name: 'SlidePuzzleContainer',
+  name: "SlidePuzzleContainer",
   props: {
     name: String,
   },
@@ -79,15 +101,15 @@ export default {
     IonHeader,
     IonTitle,
     IonToolbar,
-    IonDatetime,
     IonIcon,
+    StopwatchContainer,
   },
   setup() {
     return {
       refresh,
       expand,
-      folderOpenOutline
-    }
+      folderOpenOutline,
+    };
   },
   data() {
     return {
@@ -97,52 +119,36 @@ export default {
       cols: 4,
       rows: 4,
       openPos: null,
-      contextList: [],
+      sourcePosList: [],
+      targetPosList: [],
+      animatePosList: [],
 
       //image size
-      containerSize: 500,
+      boardSize: 500,
       imageMinSize: 0,
       imageStartX: 0,
       imageStartY: 0,
-      muted:true, //video is muted because chrome video autoplay policy does not allow autoplay unless muted
+      tilePadding: 5,
 
       //tile canvas----------
-      tileCanvasList: {},
       image: null,
       blob: null,
       src: "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Bokeh%20-%2055859.mp4",
       lastRender: -1,
-      canvasRAFID: null,
       bufferCanvas: null,
-      bufferCanvasContext:null,
-      backgroundCanvas:null,
-      backgroundCtx:null,
-
-
-      //timer--------
-      timerTime: "00:00:00",
-      timerRAFID: null,
-      startTime: 0,
-      runTime: 0,
-    }
+      bufferCanvasCtx: null,
+      backgroundCanvas: null,
+      backgroundCtx: null,
+      rafId: null,
+      isLoaded: false,
+      muted: true, //video is muted because chrome video autoplay policy does not allow autoplay unless muted
+    };
   },
   computed: {
-    tileWidthPercent() {
-      return 100 / this.cols;
-    },
-    tileHeightPercent() {
-      return 100 / this.rows;
-    },
     imageTileWidth() {
       return Math.floor(this.imageMinSize / this.cols);
     },
     imageTileHeight() {
-      return Math.floor(this.imageMinSize / this.rows);
-    },
-    tileWidth() {
-      return Math.floor(this.imageMinSize / this.cols);
-    },
-    tileHeight() {
       return Math.floor(this.imageMinSize / this.rows);
     },
     isImage() {
@@ -155,30 +161,116 @@ export default {
       }
       return /\.(jpe?g|png|webm|gif)$/i.test(this.src);
     },
+    canvasWidth() {
+      return (
+        this.imageTileWidth * this.puzzleSize +
+        this.tilePadding * (this.puzzleSize - 1)
+      );
+    },
+    canvasHeight() {
+      return (
+        this.imageTileHeight * this.puzzleSize +
+        this.tilePadding * (this.puzzleSize - 1)
+      );
+    },
   },
+  watch: {
+    tiles: {
+      handler() {
+        if (this.isLoaded) {
+          this.setSlideAnimationTween();
 
-
+          if (this.checkSolved() == true) {
+            this.$refs.stopwatchRef.stopTimer();
+          }
+        }
+      },
+      deep: true,
+    },
+  },
 
   //action =====================================================================
   beforeMount() {
-    this.getRandomImg();
-    this.setTile();
     window.addEventListener("resize", this.handleResize);
     this.handleResize();
-
-    //set bufferCanvas
-    if(!this.bufferCanvas){
-      this.bufferCanvas = document.createElement("canvas");
-      this.bufferCanvasContext = this.bufferCanvas.getContext("2d", { alpha: false });
-      this.bufferCanvasContext.imageSmoothingEnabled= false;
-    }
+    this.getRandomImg();
+    this.startBoardFrameLoop();
   },
   unmounted() {
     window.removeEventListener("resize", this.handleResize);
-    this.terminateVideo();
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+    }
   },
 
   methods: {
+    startBoardFrameLoop() {
+      const loop = () => {
+        if (this.isLoaded) {
+          this.updateAnimationPosition();
+          this.updateMediaBuffer();
+          this.updateTileAnimation();
+          this.updateBackgroundAnimation();
+        }
+        this.rafId = requestAnimationFrame(loop);
+      };
+      this.$nextTick(loop);
+    },
+    updateAnimationPosition() {
+      TWEEN.update();
+    },
+    updateMediaBuffer() {
+      this.bufferCanvasCtx.drawImage(this.image, 0, 0);
+    },
+    updateTileAnimation() {
+      this.boardContext.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+      this.tiles.forEach((item, i) => {
+        if (this.openPos == i) {
+          return;
+        }
+        this.boardContext.drawImage(
+          this.bufferCanvas,
+          this.imageStartX + this.sourcePosList[item].x,
+          this.imageStartY + this.sourcePosList[item].y,
+          this.imageTileWidth,
+          this.imageTileHeight,
+          this.animatePosList[item].x,
+          this.animatePosList[item].y,
+          this.imageTileWidth,
+          this.imageTileHeight
+        );
+      });
+    },
+    updateBackgroundAnimation() {
+      this.backgroundCtx.drawImage(
+        this.bufferCanvas,
+        0,
+        0,
+        this.imageWidth,
+        this.imageHeight,
+        0,
+        0,
+        100,
+        100
+      );
+    },
+
+    setSlideAnimationTween() {
+      var isImmediate = false;
+
+      this.tiles.forEach((item, i) => {
+        if (isImmediate) {
+          this.animatePosList[item] = this.targetPosList[i];
+        } else {
+          new TWEEN.Tween(this.animatePosList[item])
+            .to(this.targetPosList[i], 800)
+            .easing(TWEEN.Easing.Elastic.Out)
+            .start();
+        }
+      });
+    },
+
+    //puzzle image load===========================================================================
     getRandomImg() {
       // const fileList = [
       //   "Bokeh - 55859.mp4",
@@ -193,289 +285,233 @@ export default {
       ];
       this.src = shuffle.pick(fileList); //get random item
     },
-    //puzzle init===========================================================================
-    setTile() {
-      this.tiles = Array.from(range(this.cols * this.rows)).map((el, index) => {
-        return {
-          index: index,
-          position: index
-        };
-      });
-      this.openPos = this.cols * this.rows - 1;
 
-
-      this.stopTimer();
-      this.resetTimer();
-    },
-
-    //puzzle image load===========================================================================
     onMediaLoad() {
       this.$nextTick(() => {
-        this.terminateVideo();
         this.image = this.$refs.sourceImg;
-
-        if (this.isImage) {
-          this.onImgLoad();
-        } else {
-          this.onVideoLoad();
-        }
+        this.resetTile();
       });
     },
-    onVideoLoad() {
-      this.initCanvas(this.image.videoWidth, this.image.videoHeight);
-      const loop = () => {
-        this.imageToCanvas();
-        this.canvasRAFID =requestAnimationFrame(loop);
-      };
-      this.canvasRAFID =requestAnimationFrame(loop);
+    resetTile() {
+      this.isLoaded = false;
+      this.setTile();
+      this.initCanvas();
+      this.$refs.stopwatchRef.resetTimer();
+      this.isLoaded = true;
     },
-    terminateVideo() {
-      cancelAnimationFrame(this.canvasRAFID);
-    },
-    onImgLoad() {
-      this.initCanvas(this.image.naturalWidth, this.image.naturalHeight);
-      this.$nextTick(() => {
-        this.imageToCanvas();
-      });
-    },
-    imageToCanvas() {
-      //imageToBuffer
-      this.bufferCanvasContext.drawImage(this.image,0,0);
-      //bufferToTile
-      this.contextList.forEach((context, index) => {
-        context.drawImage(
-          this.bufferCanvas,
-          this.imageStartX + this.getBackgroundPositionList[index].x,
-          this.imageStartY + this.getBackgroundPositionList[index].y,
-          this.imageTileWidth,
-          this.imageTileHeight,
-          0,
-          0,
-          this.tileWidth,
-          this.tileHeight,
-        )
-      });
-      //bufferToBackground
-      this.backgroundCtx.drawImage(this.bufferCanvas, 0, 0, this.imageWidth, this.imageHeight, 0, 0, 100, 100);
-    },
-    initCanvas(imageWidth, imageHeight) {
-      //calculate center start pos for tile
-      this.imageWidth = imageWidth;
-      this.imageHeight = imageHeight;
-      this.imageMinSize = Math.min(this.imageWidth, this.imageHeight);
-      this.imageStartX = Math.floor((this.imageWidth - this.imageMinSize) / 2);
-      this.imageStartY = Math.floor((this.imageHeight - this.imageMinSize) / 2);
-
-      //set buffer width height
-      this.bufferCanvas.width = this.imageWidth;
-      this.bufferCanvas.height = this.imageHeight;
-      //get tile context list and get tile position list
-      this.contextList= [];
-      this.getBackgroundPositionList=[];
-      Object.entries(this.tileCanvasList).forEach(([index, canvas]) => {
-        const con =canvas.getContext("2d", { alpha: false });
-        con.imageSmoothingEnabled= false;
-        this.contextList.push(con);
-
-        this.getBackgroundPositionList.push(this.getBackgroundPosition(index));
-      });
-      //background size
-      if(!this.backgroundCanvas ){
+    initCanvas() {
+      //set background canvas
+      if (!this.backgroundCanvas) {
         this.backgroundCanvas = this.$refs.background;
         this.backgroundCanvas.width = 100;
         this.backgroundCanvas.height = 100;
-        this.backgroundCtx = this.backgroundCanvas.getContext("2d", { alpha: false });
-        this.backgroundCtx.filter = 'blur(3px) brightness(0.5)';
+        this.backgroundCtx = this.initContext(this.backgroundCanvas);
+        this.backgroundCtx.filter = "blur(3px) brightness(0.5)";
       }
+      //set bufferCanvas
+      if (!this.bufferCanvas) {
+        this.bufferCanvas = document.createElement("canvas");
+        this.bufferCanvasCtx = this.initContext(this.bufferCanvas);
+      }
+
+      //calculate center start pos for tile
+      this.imageWidth = this.isImage
+        ? this.image.naturalWidth
+        : this.image.videoWidth;
+      this.imageHeight = this.isImage
+        ? this.image.naturalHeight
+        : this.image.videoHeight;
+      this.imageMinSize = Math.min(this.imageWidth, this.imageHeight);
+      this.imageStartX = Math.floor((this.imageWidth - this.imageMinSize) / 2);
+      this.imageStartY = Math.floor((this.imageHeight - this.imageMinSize) / 2);
+      this.bufferCanvas.width = this.imageWidth;
+      this.bufferCanvas.height = this.imageHeight;
+
+      // main board
+      this.boardCanvas = this.$refs.boardCanvas;
+      this.boardContext = this.initContext(this.boardCanvas);
+      this.sourcePosList = [];
+      this.tiles.forEach((element, index) => {
+        var coords = this.indexToCoor(index);
+        var pos = {
+          x: coords.x * this.imageTileWidth,
+          y: coords.y * this.imageTileHeight,
+        };
+        var posWithPadding = {
+          x: pos.x + coords.x * this.tilePadding,
+          y: pos.y + coords.y * this.tilePadding,
+        };
+
+        this.sourcePosList.push(pos);
+        this.animatePosList.push(deepcopy(posWithPadding));
+        this.targetPosList.push(deepcopy(posWithPadding));
+      });
     },
-    posToCoor(index) {
+    initContext(canvasItem) {
+      const ctx = canvasItem.getContext("2d", {
+        alpha: false,
+      });
+      ctx.imageSmoothingEnabled = false;
+      return ctx;
+    },
+
+    indexToCoor(index) {
       return {
         x: index % this.cols,
-        y: Math.floor(index / this.cols)
+        y: Math.floor(index / this.cols),
       };
     },
-    getBackgroundPosition(index) {
-      const coords = this.posToCoor(index);
-      return {
-        x: coords.x * this.imageTileWidth,
-        y: coords.y * this.imageTileHeight
-      };
-    },
-
-
     //puzzle move===========================================================================
+    setTile() {
+      this.tiles = Array.from(range(this.cols * this.rows));
+      this.openPos = this.cols * this.rows - 1;
+    },
+
+    handleTileClick(event) {
+      var x = event.offsetX / event.target.offsetWidth;
+      var y = event.offsetY / event.target.offsetHeight;
+
+      const col = Math.floor(x * this.puzzleSize);
+      const row = Math.floor(y * this.puzzleSize);
+      const idx = row * this.cols + col;
+      this.move(idx);
+    },
+
     move(position) {
-      const isSameRow = this.posToCoor(position).y == this.posToCoor(this.openPos).y;
-      const isSameCol = this.posToCoor(position).x == this.posToCoor(this.openPos).x;
+      const isSameRow =
+        this.indexToCoor(position).y == this.indexToCoor(this.openPos).y;
+      const isSameCol =
+        this.indexToCoor(position).x == this.indexToCoor(this.openPos).x;
 
       if (isSameRow || isSameCol) {
         let inc = this.openPos < position ? 1 : -1;
         inc = isSameRow ? inc : inc * this.cols;
 
         //for each between openPos and selectedPos
-        //swap in script array var
-        //swap in screen
+        //swap
         range(this.openPos, position, inc).forEach((i) => {
-          [this.tiles[i].position, this.tiles[i + inc].position] = [this.tiles[i + inc].position, this.tiles[i].position];
-          [this.tiles[i], this.tiles[i + inc]] = [this.tiles[i + inc], this.tiles[i]];
+          [this.tiles[i], this.tiles[i + inc]] = [
+            this.tiles[i + inc],
+            this.tiles[i],
+          ];
         });
 
         //make blank space on selected position
         this.openPos = position;
-
-        //check puzzle solved
-        if (this.checkSolved() == true) {
-          this.stopTimer();
-        }
       }
-    },
-    checkSolved() {
-      for (const value of this.tiles) {
-        if (value.index != value.position) {
-          return false;
-        }
-      }
-      return true;
     },
     randomSlide(iterations) {
       let possibleShuffleList;
       //shuffle row ones and cols ones, repeat
       range(iterations).forEach((i) => {
-        if (i % 2 == 0) { //possible row shuffle list
-          possibleShuffleList = Array.from(range(
-            this.openPos % this.cols,
-            this.cols * this.rows,
-            this.cols
-          ));
-        } else { //possible width shuffle list
-          possibleShuffleList = Array.from(range(
-            this.posToCoor(this.openPos).y * this.cols,
-            (this.posToCoor(this.openPos).y + 1) * this.cols));
+        if (i % 2 == 0) {
+          //possible row shuffle list
+          possibleShuffleList = Array.from(
+            range(this.openPos % this.cols, this.cols * this.rows, this.cols)
+          );
+        } else {
+          //possible width shuffle list
+          possibleShuffleList = Array.from(
+            range(
+              this.indexToCoor(this.openPos).y * this.cols,
+              (this.indexToCoor(this.openPos).y + 1) * this.cols
+            )
+          );
         }
 
         //move random pos
-        possibleShuffleList = possibleShuffleList.filter((e, i) => i !== this.openPos)
+        possibleShuffleList = possibleShuffleList.filter(
+          (e, i) => i !== this.openPos
+        );
         const randomPos = shuffle.pick(possibleShuffleList);
         this.move(randomPos);
       });
-      this.restartTimer();
+      this.$refs.stopwatchRef.restartTimer();
     },
-
+    checkSolved() {
+      for (const [i, value] of this.tiles.entries()) {
+        if (i != value) {
+          return false;
+        }
+      }
+      return true;
+    },
 
     //input handle============================================================================================
-    changeSizeUsingDate(event) {
-      const size = new Date(event.detail.value).getYear();
-      this.puzzleSize = size;
-      this.cols = this.puzzleSize;
-      this.rows = this.puzzleSize;
-      this.setTile();
-      this.onMediaLoad();
+    async changeSize() {
+      var options = {
+        name: "size",
+        options: Array.from(range(3, 10)).map((value) => {
+          return {
+            text: value,
+            value: value,
+          };
+        }),
+      };
+
+      const picker = await pickerController.create({
+        columns: [options],
+        buttons: [
+          {
+            text: "Cancel",
+            role: "cancel",
+          },
+          {
+            text: "Confirm",
+            handler: (selected) => {
+              var size = parseInt(selected.size.value);
+              this.puzzleSize = size;
+              this.cols = size;
+              this.rows = size;
+              this.resetTile();
+            },
+          },
+        ],
+      });
+      await picker.present();
     },
     handleResize() {
-      const minSize = Math.min(window.innerWidth, window.innerHeight - 56); //toolbar_size=56
-      this.containerSize = minSize;
+      this.boardSize = Math.min(window.innerWidth, window.innerHeight-56); //toolbar_size=56
     },
     loadFile(event) {
-      this.muted=false;
-      this.setTile();
+      this.muted = false;
       if (this.blob) {
         URL.revokeObjectURL(this.blob);
       }
       this.blob = event.target.files[0];
       this.src = URL.createObjectURL(this.blob);
     },
-
-
-    //timer=============================================================
-    restartTimer(){
-      function padded(value) {
-        return String(value).padStart(2, "0");
-      }
-
-      this.startTime = performance.now();
-
-      if(!this.timerRAFID){
-        const loop = () => {
-          this.runTime = performance.now() - this.startTime;
-          const remain = Math.floor(this.runTime / 10) % 100;
-          const sec = Math.floor(this.runTime / 1000) % 60;
-          const min = Math.floor(this.runTime / 1000 / 60);
-          this.timerTime = padded(min) + ":" + padded(sec) + ":" + padded(remain);
-
-          this.timerRAFID = requestAnimationFrame(loop);
-        };
-        this.$nextTick(loop);
-      }
-    },
-    stopTimer() {
-      cancelAnimationFrame(this.timerRAFID);
-      this.timerRAFID=null;
-    },
-    resetTimer(){
-      this.timerTime="00:00:00";
-    },
-
-  }
-}
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-#layout {
+#container {
+  width: 100%;
+  height: 100%;
+}
+
+.boardContainer {
+  margin: -28px 0 0 0;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  overflow:hidden;
+  overflow: hidden;
 }
 
-.puzzleContainer {
-  display: flex;
-  flex-wrap: wrap;
-  margin: -1px;
-  background: white;
-  border: 1px solid white;
-  box-shadow: 0 0 20px 0 rgba(0, 0, 0, .5);
-}
-
-.tile {
-  display: inline-block;
-  padding: 1px;
+.boardCanvas {
   box-sizing: border-box;
-}
-
-.tile .tile_canvas {
-  display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  font-size: 2rem;
   color: white;
-  filter: brightness(1.00);
-  transition: filter 200ms;
   cursor: pointer;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.5);
 }
 
-.tile .tile_canvas:hover {
-  filter: brightness(0.80);
-}
-
-.controls {
-  margin-top: 1em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.slide-move {
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);  /* transition: all .04s ease; */
-}
-
-/* background ================== */
 .sourceImg {
   position: absolute;
   visibility: hidden;
@@ -493,15 +529,8 @@ export default {
   top: 0;
 }
 
-/* header ================== */
+/* hide file upload button */
 input[type="file"] {
   display: none;
-}
-
-.custom-file-upload {
-  border: 1px solid #ccc;
-  display: inline-block;
-  padding: 6px 12px;
-  cursor: pointer;
 }
 </style>
