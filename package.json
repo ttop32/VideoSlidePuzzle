@@ -1,5 +1,5 @@
 {
-  "name": "VideoSlidePuzzle",
+  "name": "video-slide-puzzle",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@capacitor/android": "3.4.0",
     "@capacitor/app": "1.1.0",
     "@capacitor/core": "3.4.0",
     "@capacitor/haptics": "1.1.4",
@@ -23,7 +24,8 @@
     "python-range": "^1.0.4",
     "shuffle-array": "^1.0.1",
     "vue": "^3.2.21",
-    "vue-router": "^4.0.12"
+    "vue-router": "^4.0.12",
+    "vue3-touch-events": "^4.1.0"
   },
   "devDependencies": {
     "@capacitor/cli": "3.4.0",

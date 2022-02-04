@@ -52,19 +52,22 @@
         :muted="muted"
       ></video>
 
-      <div class="boardContainer">
-        <canvas
-          ref="boardCanvas"
-          class="tile_canvas"
-          @click="handleTileClick"
-          :width="canvasWidth"
-          :height="canvasWidth"
-          :style="{
-            width: boardSize + 'px',
-            margin: '-' + tilePadding + 'px',
-            border: tilePadding + 'px solid white',
-          }"
-        ></canvas>
+      <div class="boardContainerFull">
+        <div class="boardContainerBox">
+          <canvas
+            ref="boardCanvas"
+            class="tile_canvas"
+            v-touch:tap="touchHandler"
+            v-touch:swipe="swipeHandler"
+            :width="canvasWidth"
+            :height="canvasWidth"
+            :style="{
+              width: boardSize + 'px',
+              margin: '-' + tilePadding + 'px',
+              border: tilePadding + 'px solid white',
+            }"
+          ></canvas>
+        </div>
       </div>
       <canvas class="background" ref="background"> </canvas>
     </ion-content>
@@ -128,7 +131,7 @@ export default {
       imageMinSize: 0,
       imageStartX: 0,
       imageStartY: 0,
-      tilePadding: 5,
+      tilePadding: 3,
 
       //tile canvas----------
       image: null,
@@ -139,9 +142,11 @@ export default {
       bufferCanvasCtx: null,
       backgroundCanvas: null,
       backgroundCtx: null,
+
       rafId: null,
       isLoaded: false,
       muted: true, //video is muted because chrome video autoplay policy does not allow autoplay unless muted
+      useSlideAnimation: true,
     };
   },
   computed: {
@@ -256,34 +261,32 @@ export default {
     },
 
     setSlideAnimationTween() {
-      var isImmediate = false;
-
       this.tiles.forEach((item, i) => {
-        if (isImmediate) {
-          this.animatePosList[item] = this.targetPosList[i];
-        } else {
+        if (this.useSlideAnimation) {
           new TWEEN.Tween(this.animatePosList[item])
             .to(this.targetPosList[i], 800)
             .easing(TWEEN.Easing.Elastic.Out)
             .start();
+        } else {
+          this.animatePosList[item] = this.targetPosList[i];
         }
       });
     },
 
     //puzzle image load===========================================================================
     getRandomImg() {
-      // const fileList = [
-      //   "Bokeh - 55859.mp4",
-      //   "Mountain - 65953.mp4",
-      //   "Waves - 61950.mp4",
-      // ];
-      // this.src = "../assets/img/" + shuffle.pick(fileList); //get random item
       const fileList = [
-        "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Bokeh%20-%2055859.mp4",
-        "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Mountain%20-%2065953.mp4",
-        "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Waves%20-%2061950.mp4",
+        "Bokeh - 55859.mp4",
+        "Mountain - 65953.mp4",
+        "Waves - 61950.mp4",
       ];
-      this.src = shuffle.pick(fileList); //get random item
+      this.src = "../assets/img/" + shuffle.pick(fileList); //get random item
+      // const fileList = [
+      //   "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Bokeh%20-%2055859.mp4",
+      //   "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Mountain%20-%2065953.mp4",
+      //   "https://ttop32.github.io/VideoSlidePuzzle/public/assets/img/Waves%20-%2061950.mp4",
+      // ];
+      // this.src = shuffle.pick(fileList); //get random item
     },
 
     onMediaLoad() {
@@ -331,6 +334,7 @@ export default {
       this.boardCanvas = this.$refs.boardCanvas;
       this.boardContext = this.initContext(this.boardCanvas);
       this.sourcePosList = [];
+      this.targetPosList = [];
       this.tiles.forEach((element, index) => {
         var coords = this.indexToCoor(index);
         var pos = {
@@ -341,11 +345,10 @@ export default {
           x: pos.x + coords.x * this.tilePadding,
           y: pos.y + coords.y * this.tilePadding,
         };
-
         this.sourcePosList.push(pos);
-        this.animatePosList.push(deepcopy(posWithPadding));
-        this.targetPosList.push(deepcopy(posWithPadding));
+        this.targetPosList.push(posWithPadding);
       });
+      this.animatePosList = deepcopy(this.targetPosList);
     },
     initContext(canvasItem) {
       const ctx = canvasItem.getContext("2d", {
@@ -367,23 +370,17 @@ export default {
       this.openPos = this.cols * this.rows - 1;
     },
 
-    handleTileClick(event) {
-      var x = event.offsetX / event.target.offsetWidth;
-      var y = event.offsetY / event.target.offsetHeight;
-
-      const col = Math.floor(x * this.puzzleSize);
-      const row = Math.floor(y * this.puzzleSize);
-      const idx = row * this.cols + col;
-      this.move(idx);
-    },
-
     move(position) {
       const isSameRow =
         this.indexToCoor(position).y == this.indexToCoor(this.openPos).y;
       const isSameCol =
         this.indexToCoor(position).x == this.indexToCoor(this.openPos).x;
 
-      if (isSameRow || isSameCol) {
+      if (
+        (isSameRow || isSameCol) &&
+        0 <= position &&
+        position < this.tiles.length
+      ) {
         let inc = this.openPos < position ? 1 : -1;
         inc = isSameRow ? inc : inc * this.cols;
 
@@ -438,6 +435,41 @@ export default {
     },
 
     //input handle============================================================================================
+    swipeHandler(direction) {
+      if (direction == "left") {
+        this.move(this.openPos + 1);
+      } else if (direction == "right") {
+        this.move(this.openPos - 1);
+      } else if (direction == "top") {
+        this.move(this.openPos + 1 * this.puzzleSize);
+      } else if (direction == "bottom") {
+        this.move(this.openPos - 1 * this.puzzleSize);
+      }
+    },
+    touchHandler(event) {
+      var x, y, target;
+      if (event.changedTouches) {
+        const touch = event.changedTouches[0];
+        const rect = touch.target.getBoundingClientRect();
+
+        x = touch.clientX - rect.left;
+        y = touch.clientY - rect.top;
+        target = touch.target;
+      } else {
+        x = event.offsetX;
+        y = event.offsetY;
+        target = event.target;
+      }
+
+      x = x / target.offsetWidth;
+      y = y / target.offsetHeight;
+
+      const col = Math.floor(x * this.puzzleSize);
+      const row = Math.floor(y * this.puzzleSize);
+      const idx = row * this.cols + col;
+      this.move(idx);
+    },
+
     async changeSize() {
       var options = {
         name: "size",
@@ -471,7 +503,7 @@ export default {
       await picker.present();
     },
     handleResize() {
-      this.boardSize = Math.min(window.innerWidth, window.innerHeight-56); //toolbar_size=56
+      this.boardSize = Math.min(window.innerWidth, window.innerHeight - 56); //toolbar_size=56
     },
     loadFile(event) {
       this.muted = false;
@@ -492,8 +524,8 @@ export default {
   height: 100%;
 }
 
-.boardContainer {
-  margin: -28px 0 0 0;
+.boardContainerFull {
+  margin: -26px 0 0 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -503,13 +535,16 @@ export default {
   overflow: hidden;
 }
 
+.boardContainerBox {
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.5);
+}
+
 .boardCanvas {
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
   color: white;
   cursor: pointer;
-  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.5);
 }
 
 .sourceImg {
