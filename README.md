@@ -1,8 +1,6 @@
 # VideoSlidePuzzle
 - classic sliding puzzle is implemented for web and android using ionic vue
 - user can create own sliding puzzle from any user provided video or image
-- Currently, I fail to implement for android apk. This is too heavy to load(too laggy). 
-- But when I use android phone to run web app, its performance is good enough.
 - play on [web](https://slidepuzzle.web.app/)
 
 
@@ -31,20 +29,14 @@
 ```python
 npm install -g @ionic/cli@latest native-run cordova-res    
 npm install -g firebase-tools
-#ionic start VideoSlidePuzzle blank --type vue
-#cd VideoSlidePuzzle
-#ionic integrations enable capacitor
-#ionic build
-#ionic cap add android
 
-#vue add pwa
-#firebase login
-#firebase init
-#ionic build
-#firebase deploy
-
+ionic start
+cd VideoSlidePuzzle
+npm i deepcopy  --save
+npm i @tweenjs/tween.js  --save
 npm i python-range --save
 npm i shuffle-array --save
+npm i vue3-touch-events --save
 ```
 
 # Run serve
@@ -54,6 +46,15 @@ ionic serve
 
 # Run build   
 ```python
+# android deploy
+ionic cap add android
+cordova-res android --skip-config --copy
+ionic build && ionic cap sync android && ionic cap open android
+
+# web deploy
+vue add pwa
+firebase login
+firebase init
 ionic build
 firebase deploy
 ```
@@ -65,7 +66,15 @@ firebase deploy
 - [Vue Slide Puzzle](https://codepen.io/oldcoyote/pen/OwJvxV)
 - [Slide Puzzle](https://codepen.io/mkeke/pen/ByzXeJ) 
 - [python-range](https://github.com/michal-perlakowski/range)
+- [vue3-touch-events](https://github.com/robinrodricks/vue3-touch-events)
+- [tween.js](https://github.com/tweenjs/tween.js/)
+- [deepcopy](https://www.npmjs.com/package/deepcopy)
 - [shuffle-array](https://github.com/pazguille/shuffle-array)
 - [Bokeh](https://pixabay.com/videos/id-55859/) 
 - [Mountain](https://pixabay.com/videos/id-65953/) 
 - [Waves](https://pixabay.com/videos/id-61950/) 
+- [privacy-policy-generator](https://www.termsfeed.com/privacy-policy-generator/) 
+- [google play console app sign](https://pleasantstep.tistory.com/21?category=794635) 
+- [device-art-generator](https://developer.android.com/distribute/marketing-tools/device-art-generator) 
+- [wood puzzle image](https://www.pexels.com/ko-kr/photo/6469463/) 
+- [miricanvas](https://www.miricanvas.com/)
