@@ -3,24 +3,22 @@ This Privacy Policy describes Our policies and procedures on the collection, use
 We use Your Personal data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy. This Privacy Policy has been created with the help of the Privacy Policy Template.
 
 Usage Data is collected automatically when using the Service.
-Usage Data may include information such as the pages of our Service that You visit, the time and date of Your visit, your game score, the time spent on those pages, unique device identifiers and other diagnostic data.
-When You access the Service by or through a mobile device, We may collect certain information automatically, including, but not limited to, the type of mobile device You use, Your mobile device unique ID, the IP address of Your mobile device, Your mobile operating system, the type of mobile Internet browser You use, unique device identifiers and other diagnostic data.
-We may also collect information that Your browser sends whenever You visit our Service or when You access the Service by or through a mobile device.
-Use of Your Personal Data
-
+Usage Data may include information such as the pages of our Service that You visit, the time and date of Your visit, the time spent on those pages, identifiers and other diagnostic data.
+We may also collect user-generated content such as game scores, game achivement and user given media data (video and image).
 
 
 The Company may use Personal Data for the following purposes: 
 To provide and maintain our Service, including to monitor the usage of our Service.
+To use Google Play Games Services: to share your game leaderboard and achievement with other users.
+To provide game functionality: we uses user given media data to create game puzzle tiles
 To manage Your Account: to manage Your registration as a user of the Service. The Personal Data You provide can give You access to different functionalities of the Service that are available to You as a registered user.
-For the performance of a contract: the development, compliance and undertaking of the purchase contract for the products, items or services You have purchased or of any other contract with Us through the Service.
 For business transfers: We may use Your information to evaluate or conduct a merger, divestiture, restructuring, reorganization, dissolution, or other sale or transfer of some or all of Our assets, whether as a going concern or as part of bankruptcy, liquidation, or similar proceeding, in which Personal Data held by Us about our Service users is among the assets transferred.
-For other purposes: We may use Your information for other purposes, such as data analysis, identifying usage trends, determining the effectiveness of our promotional campaigns and to evaluate and improve our Service, products, services, marketing and your experience.
+For other purposes: We may use Your information for other purposes, such as data analysis, identifying usage trends, determining the effectiveness and to evaluate and improve our Service, products, services and your experience.
 
 
 
 We may share Your personal information in the following situations:
-• With Service Providers: We may share Your personal information with Service Providers to monitor and analyze the use of our Service,  to contact You.
+• With Service Providers: We may share Your personal information with Service Providers to monitor and analyze the use of our Service
 • For business transfers: We may share or transfer Your personal information in connection with, or during negotiations of, any merger, sale of Company assets, financing, or acquisition of all or a portion of Our business to another company.
 • With Affiliates: We may share Your information with Our affiliates, in which case we will require those affiliates to honor this Privacy Policy. Affiliates include Our parent company and any other subsidiaries, joint venture partners or other companies that We control or that are under common control with Us.
 • With business partners: We may share Your information with Our business partners to offer You certain products, services or promotions.
