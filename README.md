@@ -2,6 +2,7 @@
 - classic sliding puzzle is implemented for web and android using ionic vue
 - user can create own sliding puzzle from any user provided video or image
 - play on [web](https://slidepuzzle.web.app/)
+- play on [andorid](https://play.google.com/store/apps/details?id=com.video.slide.puzzle.app)
 
 
 # Result  
